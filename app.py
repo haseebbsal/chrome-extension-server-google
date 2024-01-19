@@ -1,35 +1,93 @@
-from flask import Flask, render_template,jsonify,request
-from backend import (
-    get_suggested_funds,
-)
+from flask import Flask, render_template,jsonify,request,send_file
 from flask_cors import CORS
+
+import pandas as pd
+from io import BytesIO
 
 app = Flask(__name__)
 
 CORS(app)
+import os
 
-# @app.route("/",methods=['POST'])
-# def index():
-#     fund_codes_to_search = request.get_json()
-#     # fund_codes_to_search =["BMO97334", "HMUS.U", "BMO97325", "PFC6611"]
 
-#     suggested_funds_result = get_suggested_funds(
-#         "api/static/Funds.xlsx", fund_codes_to_search
-#     )
-#     return jsonify(suggested_funds_result)
-    # return render_template("index.html", suggested_funds=suggested_funds_result)
 
-@app.route("/")
+@app.route('/google', methods=['POST'])
+def create_and_save_excel():
+    data = request.json  
+    if not data:
+        return "No data received", 400
+
+    df = pd.DataFrame(data)
+
+    excel_file = BytesIO()
+    file_path = 'static/google-data.xlsx'
+    with pd.ExcelWriter(excel_file, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Sheet1')
+
+    excel_file.seek(0)
+
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    with open(file_path, 'wb') as f:
+        f.write(excel_file.getvalue())
+
+
+    return jsonify('done')
+
+
+@app.route('/linkedin', methods=['POST'])
+def create_and_save_linkedin():
+    data = request.json  
+    if not data:
+        return "No data received", 400
+
+    df = pd.DataFrame(data)
+
+    excel_file = BytesIO()
+    file_path = 'static/linkedin-data.xlsx'
+    with pd.ExcelWriter(excel_file, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Sheet1')
+
+    excel_file.seek(0)
+
+
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+
+    with open(file_path, 'wb') as f:
+        f.write(excel_file.getvalue())
+
+    return jsonify('done')
+
+@app.route("/google",methods=['GET'])
 def index():
-    # fund_codes_to_search = request.get_json()
-    # fund_codes_to_search =["BMO97334", "HMUS.U", "BMO97325", "PFC6611"]
+    file_path = 'static/google-data.xlsx'
 
-    # suggested_funds_result = get_suggested_funds(
-    #     "static/Funds.xlsx", fund_codes_to_search
-    # )
-    # return jsonify(suggested_funds_result)
-    return render_template("index.html")
+    if os.path.exists(file_path):
+        return send_file(
+            file_path,
+            as_attachment=True,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+    else:
+        return jsonify('No Google Data sheet yet')
+    
+
+@app.route("/linkedin",methods=['GET'])
+def indexLinkedIn():
+    file_path = 'static/linkedin-data.xlsx'
+
+    if os.path.exists(file_path):
+        return send_file(
+            file_path,
+            as_attachment=True,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+    else:
+        return jsonify('No LinkedIn Data sheet yet')
 
 
-# if __name__ == "__main__":
-#     app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)
