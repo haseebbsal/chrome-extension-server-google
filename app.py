@@ -89,5 +89,9 @@ def indexLinkedIn():
         return jsonify('No LinkedIn Data sheet yet')
 
 
+@app.route("/",methods=['GET'])
+def indexx():
+    return jsonify('done')
+
 if __name__ == "__main__":
     app.run(debug=True)
