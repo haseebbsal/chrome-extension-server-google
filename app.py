@@ -30,8 +30,8 @@ def create_and_save_excel():
     if os.path.exists(file_path):
         os.remove(file_path)
 
-    with pd.ExcelWriter(file_path, engine='xlsxwriter', index=False) as writer:
-        df.to_excel(writer, sheet_name='Sheet1')
+    with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Sheet1')
 
     return jsonify('done')
 
