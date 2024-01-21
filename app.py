@@ -10,28 +10,28 @@ CORS(app)
 import os
 
 
+@app.route("/",methods=['GET'])
+def home():
+    return jsonify('done')
+
+
 
 @app.route('/google', methods=['POST'])
 def create_and_save_excel():
-    data = request.json  
+    data = request.json
     if not data:
         return "No data received", 400
 
     df = pd.DataFrame(data)
 
-    excel_file = BytesIO()
     file_path = 'static/google-data.xlsx'
-    with pd.ExcelWriter(excel_file, engine='xlsxwriter') as writer:
-        df.to_excel(writer, index=False, sheet_name='Sheet1')
 
-    excel_file.seek(0)
-
+    # Check if the file exists, and remove it if it does
     if os.path.exists(file_path):
         os.remove(file_path)
 
-    with open(file_path, 'wb') as f:
-        f.write(excel_file.getvalue())
-
+    with pd.ExcelWriter(file_path, engine='xlsxwriter', index=False) as writer:
+        df.to_excel(writer, sheet_name='Sheet1')
 
     return jsonify('done')
 
@@ -89,9 +89,6 @@ def indexLinkedIn():
         return jsonify('No LinkedIn Data sheet yet')
 
 
-@app.route("/",methods=['GET'])
-def indexx():
-    return jsonify('done')
 
 if __name__ == "__main__":
     app.run(debug=True)
